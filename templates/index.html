@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Phân loại biển báo</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 40px;
+      background-color: #fafafa;
+      color: #333;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #2c3e50;
+    }
+
+    input[type="file"] {
+      margin-bottom: 10px;
+    }
+
+    #preview {
+      margin-top: 15px;
+      width: 50%; /* Chiều rộng ảnh chiếm 90% màn hình */
+      height: auto; /* Giữ tỷ lệ ảnh */
+      max-height: 500px; /* Chiều cao tối đa 500px */
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      display: none;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #3498db;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    #resultBox {
+      margin-top: 30px;
+      padding: 20px;
+      border: 1px solid #dcdcdc;
+      border-radius: 10px;
+      background-color: #ffffff;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      display: none;
+    }
+
+    #resultBox p {
+      font-size: 18px;
+      margin: 10px 0;
+    }
+
+    strong {
+      color: #2d3436;
+    }
+
+  </style>
+
+</head>
+<body>
+
+  <h2>🔍 Phân loại biển báo giao thông</h2>
+
+  <input type="file" id="imageInput" accept="image/*"><br>
+  <img id="preview" src="#" alt="Preview"><br><br>
+
+  <button onclick="uploadImage()">Dự đoán</button>
+
+  <div id="resultBox">
+    <p><strong>🚦 Tên biển báo:</strong> <span id="labelText">-</span></p>
+    <p><strong>🆔 Mã lớp:</strong> <span id="classText">-</span></p>
+  </div>
+
+  <script>
+    const imageInput = document.getElementById('imageInput');
+    const preview = document.getElementById('preview');
+    const resultBox = document.getElementById('resultBox');
+    const labelText = document.getElementById('labelText');
+    const classText = document.getElementById('classText');
+
+    imageInput.addEventListener('change', () => {
+      const file = imageInput.files[0];
+      if (file) {
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = 'block';
+        resultBox.style.display = 'none';
+      }
+    });
+
+    async function uploadImage() {
+      const file = imageInput.files[0];
+      if (!file) {
+        alert("Vui lòng chọn một ảnh!");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('image', file);
+
+      try {
+        const response = await fetch('/predict', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await response.json();
+
+        console.log("✅ BE response:", data);
+
+        if (data.label) {
+          labelText.textContent = data.label;
+          classText.textContent = data.class_index + 1;
+          resultBox.style.display = 'block';
+        } else {
+          resultBox.innerHTML = "<p style='color:red;'>Không thể phân loại được ảnh!</p>";
+          resultBox.style.display = 'block';
+        }
+      } catch (error) {
+        alert("❌ Lỗi khi gọi API.");
+        console.error(error);
+      }
+    }
+  </script>
+</body>
+</html>
