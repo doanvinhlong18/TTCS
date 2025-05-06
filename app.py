@@ -8,48 +8,48 @@ from io import BytesIO
 app = Flask(__name__)
 model = load_model('my_model.keras')
 classes = {
-    1: 'Giới hạn tốc độ (20km/h)',
-    2: 'Giới hạn tốc độ (30km/h)',
-    3: 'Giới hạn tốc độ (50km/h)',
-    4: 'Giới hạn tốc độ (60km/h)',
-    5: 'Giới hạn tốc độ (70km/h)',
-    6: 'Giới hạn tốc độ (80km/h)',
+    1: 'Tốc độ tối đa cho phép (20km/h)',
+    2: 'Tốc độ tối đa cho phép (30km/h)',
+    3: 'Tốc độ tối đa cho phép (50km/h)',
+    4: 'Tốc độ tối đa cho phép (60km/h)',
+    5: 'Tốc độ tối đa cho phép (70km/h)',
+    6: 'Tốc độ tối đa cho phép (80km/h)',
     7: 'Hết giới hạn tốc độ (80km/h)',
-    8: 'Giới hạn tốc độ (100km/h)',
-    9: 'Giới hạn tốc độ (120km/h)',
+    8: 'Tốc độ tối đa cho phép (100km/h)',
+    9: 'Tốc độ tối đa cho phép (120km/h)',
     10: 'Cấm vượt',
-    11: 'Cấm vượt với xe trên 3.5 tấn',
-    12: 'Nhường đường tại ngã tư',
+    11: 'Cấm xe tải vượt',
+    12: 'Giao nhau với đường không ưu tiên',
     13: 'Đường ưu tiên',
-    14: 'Nhường đường',
+    14: 'Giao nhau với đường ưu tiên',
     15: 'Dừng lại',
-    16: 'Cấm tất cả các phương tiện',
-    17: 'Cấm xe trên 3.5 tấn',
-    18: 'Cấm vào',
-    19: 'Cảnh báo chung',
-    20: 'Đường cong nguy hiểm bên trái',
-    21: 'Đường cong nguy hiểm bên phải',
-    22: 'Đường cong đôi',
-    23: 'Đường gồ ghề',
+    16: 'Đường cấm',
+    17: 'Cấm xe tải có trọng lượng vượt quá giới hạn cho phép',
+    18: 'Đường một chiều',
+    19: 'Cảnh báo nguy hiểm',
+    20: 'Chỗ ngoặt nguy hiểm bên trái',
+    21: 'Chỗ ngoặt nguy hiểm bên phải',
+    22: 'Nhiều chỗ ngoặt nguy hiểm liên tiếp',
+    23: 'Đường lồi lõm',
     24: 'Đường trơn',
-    25: 'Đường hẹp bên phải',
-    26: 'Đang thi công',
-    27: 'Đèn tín hiệu giao thông',
-    28: 'Khu vực người đi bộ',
+    25: 'Đường bị thu hẹp bên phải',
+    26: 'Công trường',
+    27: 'Giao nhau có tín hiệu đèn',
+    28: 'Đường dành cho người đi bộ cắt ngang',
     29: 'Trẻ em qua đường',
-    30: 'Xe đạp băng qua',
+    30: 'Đường người đi xe đạp cắt ngang',
     31: 'Cẩn thận băng/tuyết',
     32: 'Động vật hoang dã băng qua',
-    33: 'Hết giới hạn tốc độ và lệnh cấm vượt',
-    34: 'Rẽ phải phía trước',
-    35: 'Rẽ trái phía trước',
-    36: 'Chỉ được đi thẳng',
-    37: 'Đi thẳng hoặc rẽ phải',
-    38: 'Đi thẳng hoặc rẽ trái',
-    39: 'Giữ bên phải',
-    40: 'Giữ bên trái',
-    41: 'Vòng xuyến bắt buộc',
-    42: 'Hết lệnh cấm vượt',
+    33: 'Hết tất cả lệnh cấm',
+    34: 'Các xe chỉ đuợc rẽ phải',
+    35: 'Các xe chỉ đuợc rẽ trái',
+    36: 'Hướng đi thẳng phải theo',
+    37: 'Các xe chỉ đuợc đi thẳng và rẽ phải',
+    38: 'Các xe chỉ đuợc đi thẳng và rẽ trái',
+    39: 'Hướng phải đi vòng sang phải',
+    40: 'Hướng phải đi vòng sang trái',
+    41: 'Nơi giao nhau chạy theo vòng xuyến',
+    42: 'Hết cấm vượt',
     43: 'Hết lệnh cấm vượt với xe trên 3.5 tấn'
 }
 @app.route('/')
@@ -60,8 +60,8 @@ def home():
 def predict():
     file = request.files['image']
     if file:
-        img = load_img(BytesIO(file.read()), target_size=(30, 30, 3))
-        img = img_to_array(img)
+        img = load_img(BytesIO(file.read()), target_size=(30, 30))
+        img = img_to_array(img)/255.0
         img = np.expand_dims(img, axis=0)
         prediction = model.predict(img)
         class_idx = np.argmax(prediction)
